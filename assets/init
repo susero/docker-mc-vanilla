@@ -1,0 +1,13 @@
+#!/bin/bash
+
+HOME_DIR=/opt/minecraft
+cd ${HOME_DIR}/data
+if [ ! -d "world" ]; then
+  mkdir world
+fi
+cat > eula.txt <<EOF
+#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).
+#Sat Jun 13 13:22:23 UTC 2015
+eula=true
+EOF
+java -Xms1024M -Xmx1024M -d64 -jar ${HOME_DIR}/minecraft/minecraft_server.1.8.7.jar nogui
