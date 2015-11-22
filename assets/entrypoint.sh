@@ -1,16 +1,21 @@
 #!/bin/bash
 
-HOME_DIR=/opt/minecraft
-DATA_DIR=${HOME_DIR}/data
-TMP_DIR=${HOME_DIR}/tmp
+USERNAME=minecraft
 
 # PARAMS
 AGREE_TO_EULA=${AGREE_TO_EULA:-false}
 JVM_MX=${JVM_MX:-1G}
 JVM_MS=${JVM_MS:-1024M}
+JVM_BITS=${JVM_BITS:-}
+JVM_CORES=${JVM_CORES:-}
+JVM_OPTIMIZE=${JVM_OPTIMIZE:-true}
 SYSTEM_TIMEZONE=${SYSTEM_TIMEZONE:-Asia/Tokyo}
 USERMAP_UID=${USERMAP_UID:-$(id -u minecraft)}
 USERMAP_GID=${USERMAP_GID:-$(id -g minecraft)}
+
+HOME_DIR=$(eval echo ~$USERNAME)
+DATA_DIR=${HOME_DIR}/data
+ASSETS_DIR=${DATA_DIR}/assets
 
 # SETUP SYSTEM TIMEZONE
 if [ ! -e /usr/share/zoneinfo/${SYTEM_TIMEZONE} ]; then
@@ -20,14 +25,14 @@ fi
 echo "${SYSTEM_TIMEZONE}" > /etc/timezone
 cp /usr/share/zoneinfo/${SYSTEM_TIMEZONE} /etc/localtime
 
-[ -e ${HOME_DIR} ] || mkdir -p ${HOME_DIR}
-[ -e ${DATA_DIR} ] || mkdir -p ${DATA_DIR}
-[ -e ${TMP_DIR} ] || mkdir -p ${TMP_DIR}
-
-[ -d ${DATA_DIR}/world ] || mkdir -p ${DATA_DIR}/world
+if [ ! -e ${ASSETS_DIR}/minecraft_server*.jar ]; then
+   echo "You need download server.jar file on yourself and put it in assets direcotory."
+   exit 1
+fi
+JARFILE=$(find ${ASSETS_DIR} -name minecraft_server\*.jar | head -n 1)
+echo "Use $(basename $JARFILE)"
 
 cd ${DATA_DIR}
-
 if [ ! -e eula.txt ]; then
 #By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).
 #Sat Jun 13 13:22:23 UTC 2015
@@ -38,13 +43,17 @@ else
    echo updating sign to eula
    sed -i -e "s/eula=.*/eula=${AGREE_TO_EULA}/" eula.txt
 fi
-[ $(id -u minecraft) -eq ${USERMAP_UID} ] || usermod -u ${USERMAP_UID} minecraft
-[ $(id -g minecraft) -eq ${USERMAP_GID} ] || usermod -g ${USERMAP_GID} minecraft
+[ $(id -u $USERNAME) -eq ${USERMAP_UID} ] || usermod -u ${USERMAP_UID} $USERNAME
+[ $(id -g $USERNAME) -eq ${USERMAP_GID} ] || usermod -g ${USERMAP_GID} $USERNAME
 
 chown -R minecraft.minecraft ${HOME_DIR}
 
 if [ $# -eq 0 ]; then
-   sudo -u minecraft java -Xms${JVM_MS} -Xmx${JVM_MX} -d64 -XX:ParallelGCThreads=2 -XX:+AggressiveOpts -jar /usr/local/sbin/lib/server/minecraft_server.1.8.8.jar nogui
+   JVM_OPTS=
+   [ -z $JVM_BITS ] || JVM_OPTS="$JVM_OPTS -d$JVM_BITS"
+   [ -z $JVM_CORES ] || JVM_OPTS="$JVM_OPTS -XX:ParallelGCThreads=$JVM_CORES"
+   [ "$JVM_OPTIMIZE" == "true" ] && JVM_OPTS="$JVM_OPTS -XX:+AggressiveOpts"
+   sudo -u $USERNAME java -Xms${JVM_MS} -Xmx${JVM_MX} ${JVM_OPTS} -jar $JARFILE nogui
 else
    $@
 fi

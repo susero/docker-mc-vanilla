@@ -7,7 +7,7 @@ Dockerがインストールされていれば、親サーバーの環境を汚�
 - サーバーのタイムゾーンが日本
 - サーバーのローカルタイムが日本
 
-これだけですが、ログに出力される時刻情報が日本標準時となるので、管理上の混乱を軽減してくれます。
+これだけですが、コンソールに出力される時刻情報が日本標準時となるので、管理上の混乱を軽減してくれます。
 
 #設定項目
 
@@ -17,18 +17,19 @@ Dockerがインストールされていれば、親サーバーの環境を汚�
 
 AGREE_TO_EULA (default: "false")
 	最低限EULAを読んでこの項目をtrueにしてもらう必要があります。
-	この項目をtrueに設定することで、あなたがMOJANGとの契約に同意したことになります。
+	この項目をtrueに設定することで、あなたがMOJANG社との契約に同意したことになります。
 
-JVM_MX (default: "2G")
-	Minecraftサーバーを動作させる際に、JavaVMに利用を許可するメモリ量の最大値を指定します。デフォルトでは2GBとなっています。
+JVM_MX (default: "1G")
+	Minecraftサーバーを動作させる際に、JavaVMに利用を許可するメモリ量の最大値を指定します。デフォルトではサーバー構築の説明にあったのと同じ1GBとなっています。
+	マシンのメモリに余裕があれば、これを大きくしてより多くのユーザーを同時に受け入れられるようにしたくなるかもしれません。
 
 JVM_MS (default: "1G")
 	Minecraftサーバーを動作させる際に、JavaVMに占有を許可するメモリ量を指定します。デフォルトでは1GBとなっています。
 
-JVM_BITS (default: "64")
+JVM_BITS (default: 無指定)
 	JavaVMにOSのビット数を指定します。
 
-JVM_CORES (default: "2")
+JVM_CORES (default: 無指定)
 	JavaVMが使用可能なCPUコア数を指定します。
 	これは、JavaVMのガーベージコレクションが行われる際に重要となります。
 	少なめにとか多めに指定するものではなく、OS側のCPU数×コア数で算出される値を指定します。
@@ -37,40 +38,39 @@ JVM_CORES (default: "2")
 SYSTEM_TIMEZONE (default: "Asia/Tokyo")
 	システムのタイムゾーンを指定します。
 	デフォルトで日本が設定されていることが、このコンテナの最大の特徴です。
+	ここを SYSTEM_TIMEZONE="US/Hawaii" にすれば、ハワイに在住の日本人サーバー管理者も幸せになれるかも。
 
-#通常の起動
 
-$ cd /home/user/mcs
-$ docker run -ti --name minecraft-server -P -v $(pwd)/minecraft-server:/opt/minecraft -e AGREE_TO_EULA=true susero/minecraft-server-ja
+# コンテナの起動
 
-初回の起動時に、minecraft_server-1.8.8.jarが公式のサイトからダウンロードされ、ワールドの生成が行われるため、実際にサーバーが起動するまでには少々時間がかかります。
-二度目（データが残っている状態）からは、高速に起動すると思います。
+## コンテナを起動する前に行っておくべき作業
+
+コンテナイメージにはライセンス上の制約でMOJANG社他から提供されているファイルは含まれません。これらのファイルはあなたがダウンロードする必要があります。
+
+vanillaサーバーを動作させるために最低限必要となるファイルはminecraft_server.1.8.8.jarだけです。minecraft.netからダウンロードしたら、ワールドデータを保存する予定のディレクトリの中にassetsディレクトリを作成して、そこに置いておきます。
+
+# 実際の起動手順
+
+以下では、minecraft_server.1.8.8.jarは/tmpディレクトリ内にダウンロード済みだとします。
+/your/work/pathは書き込み権限を持っているシステム上のワークディレクトリとします。
+
+cd /your/work/path
+mkdir -p data/assets
+cp /tmp/minecraft_server.1.8.8.jar data/assets/
+docker run -ti --rm -v $(pwd)/data:/home/minecraft/data -e AGREE_TO_EULA=true susero/minecraft-vanilla-server
+
+初回の起動時にはワールドの生成が行われるため、実際にサーバーが起動するまでには少々時間がかかります。
+二度目（データが残っている状態）からは、mkdirとcpは不要です。
 
 ## バインドするIPやポートを指定する
 
-特殊ケースだと思いますが、Dockerコンテナを実行するシステムが複数のIPを持っている場合や、標準のポート番号(25565)を変更したい場合はDockerの-pオプションを使用してください。
+特殊ケースだと思いますが、Dockerコンテナを実行するシステムが複数のIPを持っている場合や、標準のポート番号(25565)を変更したい場合はDockerの-pオプションを使用して調整してください。
 
-IPアドレスが10.9.87.6、ポート番号が21212番を使いたい場合は
+# 補足
 
-$ docker run -ti --name minecraft-server -p 10.9.87.6:21212:25565 -v $(pwd)/minecraft-server:/opt/minecraft -e AGREE_TO_EULA=true susero/minecraft-server-ja
+お気づきかと思いますが、サーバー用jarファイルのバージョンは固定されていません。
+動作確認を行ったバージョンが1.8.8ということで、タイトルにバージョンが記載されています。
+JVMとしてopenjdk-7を利用しているため、あまり古いバージョンは動作しない可能性もあります。
 
-ポート番号だけ21212番に変更したい場合は
+手元には1.8.8+Bukkit/Spigot(+mods)や、1.7.10+Forgeで「黄昏の森(The Twilight Forest)」の動作を確認したコンテナもありますが、とりあえず基本のvanillaから公開します。
 
-$ docker run -ti --name minecraft-server -p 21212:25565 -v $(pwd)/minecraft-server:/opt/minecraft -e AGREE_TO_EULA=true susero/minecraft-server-ja
-
-のように起動して下さい。
-
-#ワールドのバックアップ
-
-$ docker exec minecraft-server mcs:backup
-
-/home/user/mcs/backupsディレクトリにバックアップが作成されます。
-バックアップ処理中、Minecraftサーバーのサービスは停止状態となります。
-
-
-#ワールドのホットバックアップ
-
-$ docker exec minecraft-server mcs:hotbackup
-
-Minecraftサーバーを停止せずにバックアップを行います。
-単にサーバーを起動したままの状態でファイルをコピーしますので、破損したデータがバックアップされる可能性があります。

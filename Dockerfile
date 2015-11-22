@@ -1,21 +1,17 @@
-# Debian based linux. openjdk-7-jre-headless
-FROM java:7-jre
+FROM debian
 MAINTAINER kitsunedo13@gmail.com
 
 # Minecraft Server Version and Docker Container Image Build Number
-LABEL version="1.8.8-1"
-
-# DATA Directory
-ENV DATA_DIR /opt/minecraft
-VOLUME ["/opt/minecraft"]
+LABEL version="1.8.8-2"
 
 RUN apt-get update \
- && apt-get install -y sudo
+ && apt-get install -y sudo openjdk-7-jre-headless
 
 # copy entrypoint script and create restricted user
 ADD assets /usr/local/sbin/
-RUN useradd minecraft
 RUN chmod +x /usr/local/sbin/entrypoint.sh
+
+RUN useradd -m -s /bin/bash minecraft
 
 RUN rm -rf /var/lib/apt/lists/*
 
