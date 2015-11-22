@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -t susero/minecraft-server .
+docker build -t susero/minecraft_server-vanilla .
