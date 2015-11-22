@@ -15,6 +15,7 @@ USERMAP_GID=${USERMAP_GID:-$(id -g minecraft)}
 
 HOME_DIR=$(eval echo ~$USERNAME)
 DATA_DIR=${HOME_DIR}/data
+GAME_DIR=${DATA_DIR}/game
 ASSETS_DIR=${DATA_DIR}/assets
 
 # SETUP SYSTEM TIMEZONE
@@ -32,10 +33,9 @@ fi
 JARFILE=$(find ${ASSETS_DIR} -name minecraft_server\*.jar | head -n 1)
 echo "Use $(basename $JARFILE)"
 
-cd ${DATA_DIR}
+[ -d ${GAME_DIR} ] || mkdir -p ${GAME_DIR}
+cd ${GAME_DIR}
 if [ ! -e eula.txt ]; then
-#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).
-#Sat Jun 13 13:22:23 UTC 2015
 cat > eula.txt <<EOF
 eula=${AGREE_TO_EULA}
 EOF
