@@ -58,7 +58,7 @@ vanillaサーバーを動作させるために最低限必要となるファイ�
 cd /your/work/path
 mkdir -p data/assets
 cp /tmp/minecraft_server.1.8.8.jar data/assets/
-docker run -ti --rm -v $(pwd)/data:/home/minecraft/data -e AGREE_TO_EULA=true susero/minecraft-vanilla-server
+docker run -ti --rm -v $(pwd)/data:/home/minecraft/data -e AGREE_TO_EULA=true susero/minecraft-vanilla-jp
 ```
 
 初回の起動時にはワールドの生成が行われるため、実際にサーバーが起動するまでには少々時間がかかります。
