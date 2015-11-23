@@ -27,9 +27,12 @@ echo "${SYSTEM_TIMEZONE}" > /etc/timezone
 cp /usr/share/zoneinfo/${SYSTEM_TIMEZONE} /etc/localtime
 
 if [ ! -e ${ASSETS_DIR}/minecraft_server*.jar ]; then
-   echo "You need download server.jar file on yourself and put it in assets direcotory."
-   exit 1
+   mkdir -p ${ASSETS_DIR}
+   cd ${ASSETS_DIR}
+   echo Downloading minecraft_server.1.8.8.jar
+   curl -O https://s3.amazonaws.com/Minecraft.Download/versions/1.8.8/minecraft_server.1.8.8.jar
 fi
+
 JARFILE=$(find ${ASSETS_DIR} -name minecraft_server\*.jar | head -n 1)
 echo "Use $(basename $JARFILE)"
 

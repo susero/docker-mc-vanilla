@@ -5,7 +5,7 @@ MAINTAINER kitsunedo13@gmail.com
 LABEL version="1.8.8-2"
 
 RUN apt-get update \
- && apt-get install -y sudo openjdk-7-jre-headless
+ && apt-get install -y sudo curl openjdk-7-jre-headless
 
 # copy entrypoint script and create restricted user
 ADD assets /usr/local/sbin/
