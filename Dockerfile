@@ -2,10 +2,10 @@ FROM debian
 MAINTAINER kitsunedo13@gmail.com
 
 # Minecraft Server Version and Docker Container Image Build Number
-LABEL version="1.8.8-3"
+LABEL version="1.8.8-4"
 
-RUN apt-get update \
- && apt-get install -y sudo curl openjdk-7-jre-headless
+RUN apt-get update -y
+RUN apt-get install -y sudo curl openjdk-7-jre-headless
 
 # copy entrypoint script and create restricted user
 ADD assets /usr/local/sbin/
