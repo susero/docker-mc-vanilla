@@ -6,7 +6,6 @@ USERNAME=minecraft
 AGREE_TO_EULA=${AGREE_TO_EULA:-false}
 JVM_MX=${JVM_MX:-1G}
 JVM_MS=${JVM_MS:-1024M}
-JVM_BITS=${JVM_BITS:-}
 JVM_CORES=${JVM_CORES:-}
 JVM_OPTIMIZE=${JVM_OPTIMIZE:-true}
 SYSTEM_TIMEZONE=${SYSTEM_TIMEZONE:-Asia/Tokyo}
@@ -52,11 +51,12 @@ fi
 chown -R minecraft.minecraft ${HOME_DIR}
 
 if [ $# -eq 0 ]; then
-   JVM_OPTS=
-   [ -z $JVM_BITS ] || JVM_OPTS="$JVM_OPTS -d$JVM_BITS"
-   [ -z $JVM_CORES ] || JVM_OPTS="$JVM_OPTS -XX:ParallelGCThreads=$JVM_CORES"
-   [ "$JVM_OPTIMIZE" == "true" ] && JVM_OPTS="$JVM_OPTS -XX:+AggressiveOpts"
-   sudo -u $USERNAME java -Xms${JVM_MS} -Xmx${JVM_MX} ${JVM_OPTS} -jar $JARFILE nogui
+   if [ -z ${JVM_OPTS} ]; then
+      JVM_OPTS="-Xms${JVM_MS} -Xmx${JVM_MX}"
+      [ -z $JVM_CORES ] || JVM_OPTS="$JVM_OPTS -XX:ParallelGCThreads=$JVM_CORES"
+      [ "$JVM_OPTIMIZE" == "true" ] && JVM_OPTS="$JVM_OPTS -XX:+AggressiveOpts"
+   fi
+   sudo -u $USERNAME java ${JVM_OPTS} -jar $JARFILE nogui
 else
    $@
 fi
